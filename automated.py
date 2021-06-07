@@ -30,13 +30,12 @@ results = []
 users = []
 #Get Users
 def getusers():
-    allUsers = subprocess.check_output("dscl . list /Users", shell=True).decode()
-    allUsers = allUsers.split("\n")
+    allUsers = subprocess.check_output("dscl . list /Users", shell=True).decode().split("\n")
     users = []
     for user in allUsers:
         if not user.startswith('_') and user:
-            users.append(user) 
-		
+            users.append(user)
+
 
 getusers()
 
@@ -72,6 +71,28 @@ print(monthly)
 #Emond
 rules = os.listdir("/etc/emond.d/rules/")
 for rule in rules:
-    with open("/etc/emond.d/rules/" + rule, "rb") as file:
-        pl = plistlib.load(file)
+    with open("/etc/emond.d/rules/" + rule, "rb") as f:
+        pl = plistlib.load(f)
         print(pl)
+
+#Kernel Extensions
+extensions = os.listdir("/Library/Extensions")
+for extension in extensions:
+    for root, dirs, files in os.walk("/Library/Extensions/" + extension):
+        for file in files:
+            if file == "Info.plist":
+                with open(os.path.join(root, file), "rb") as f:
+                    kextPlist = plistlib.load(f)
+                print(kextPlist)
+                if kextPlist:
+                    exe = kextPlist.get("CFBundleExecutable")
+                    if exe:
+                        exepath = root + "/MacOS/" + exe
+
+#connections
+processes = subprocess.check_output("lsof -i", shell=True).decode().split('\n')
+for process in processes:
+
+    #process = process.split(" ")
+    if "(ESTABLISHED)" in process:
+        print(process)
